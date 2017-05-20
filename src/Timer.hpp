@@ -104,7 +104,7 @@ public:
 private:
 
     //! Alias
-    inline TimePoint now() noexcept{ return std::chrono::high_resolution_clock::now(); }
+    inline TimePoint now() const noexcept{ return std::chrono::high_resolution_clock::now(); }
 
     //! The begin time
     TimePoint m_begin;
