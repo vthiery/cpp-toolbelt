@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <string>
+#include <iomanip>
 
 namespace Toolbelt
 {
@@ -38,10 +39,9 @@ public:
     */
     static inline std::string toString(const time_t timestamp) noexcept
     {
-        char buffer[21];
-        const struct tm* const timeinfo = localtime(&timestamp);
-        strftime(buffer, sizeof(buffer), "%FT%TZ", timeinfo);
-        return buffer;
+        std::stringstream output;
+        output << std::put_time(std::localtime(&timestamp), "%FT%TZ");
+        return output.str();
     }
 };
 
