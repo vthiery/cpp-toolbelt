@@ -16,7 +16,7 @@ namespace Toolbelt
  * and adds pausing and recording features.
  *
  */
-template <typename Precision>
+template <class Precision>
 class Timer final
 {
 
@@ -57,7 +57,7 @@ public:
      * Stop the timer
      *
      * Must be called before duration().
-     * Must NOT be called before record().
+     * Must NOT be called before lap().
      *
      */
     inline void stop() noexcept;
@@ -66,12 +66,12 @@ public:
      *
      * Returns the duration
      *
-     * Must be called after stop().
+     * Will call stop().
      * It will return the time accumulated between start and end,
      * taking into account the pauses.
      *
      */
-    inline double duration() const noexcept;
+    inline double duration() noexcept;
 
     /*!
      *
@@ -82,14 +82,14 @@ public:
      * taking into account the pauses.
      *
      */
-    inline void record(const std::string& key) noexcept;
+    inline void lap(const std::string& key) noexcept;
 
     /*!
      *
-     * Returns the timings recorded via record()
+     * Returns the timings recorded via lap()
      *
      */
-    std::unordered_map<std::string, double> timings() const noexcept;
+    inline std::unordered_map<std::string, double> timings() const noexcept;
 
     /*!
      *
@@ -102,6 +102,17 @@ public:
     inline void reset() noexcept;
 
 private:
+
+    //! Finite states
+    enum class State
+    {
+        Running,
+        Paused,
+        Stopped
+    };
+
+    //! The state
+    State m_state{ State::Stopped };
 
     //! Alias
     inline TimePoint now() const noexcept{ return std::chrono::high_resolution_clock::now(); }
@@ -124,6 +135,7 @@ void
 Timer<Precision>::
 start() noexcept
 {
+    m_state = State::Running;
     m_accumulatedDuration = 0.0;
     m_begin = now();
 }
@@ -133,7 +145,11 @@ void
 Timer<Precision>::
 pause() noexcept
 {
-    m_accumulatedDuration += std::chrono::duration<double, Precision>(now() - m_begin).count();
+    if (m_state == State::Running)
+    {
+        m_state = State::Paused;
+        m_accumulatedDuration += std::chrono::duration<double, Precision>(now() - m_begin).count();
+    }
 }
 
 template <class Precision>
@@ -141,7 +157,11 @@ void
 Timer<Precision>::
 resume() noexcept
 {
-    m_begin = now();
+    if (m_state == State::Paused)
+    {
+        m_state = State::Running;
+        m_begin = now();
+    }
 }
 
 template <class Precision>
@@ -149,21 +169,26 @@ void
 Timer<Precision>::
 stop() noexcept
 {
-    m_end = now();
+    if (m_state != State::Stopped)
+    {
+        m_end = m_state == State::Paused ? m_begin : now();
+        m_state = State::Stopped;
+    }
 }
 
 template <class Precision>
 double
 Timer<Precision>::
-duration() const noexcept
+duration() noexcept
 {
+    stop();
     return m_accumulatedDuration + std::chrono::duration<double, Precision>(m_end - m_begin).count();
 }
 
 template <class Precision>
 void
 Timer<Precision>::
-record(const std::string& key) noexcept
+lap(const std::string& key) noexcept
 {
     stop();
     m_timings[key] = duration();
