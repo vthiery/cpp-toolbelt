@@ -31,7 +31,7 @@ public:
      * Constructor accepting the usual arguments
      *
      */
-    Arguments(const int argc, char** argv) noexcept;
+    inline Arguments(const int argc, char** argv) noexcept;
 
     /*!
      *
