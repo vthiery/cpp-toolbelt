@@ -34,13 +34,13 @@ public:
     *
     * Convert the timestamp to a string
     *
-    * The format is ISO-8601 compliant: YYYY-MM-DDTHH-MM-SSZ
+    * The format is ISO-8601 compliant: YYYY-MM-DDTHH-MM-SS+XXXX
     *
     */
     static inline std::string toString(const time_t timestamp) noexcept
     {
         std::stringstream output;
-        output << std::put_time(std::localtime(&timestamp), "%FT%TZ");
+        output << std::put_time(std::localtime(&timestamp), "%FT%T%z");
         return output.str();
     }
 };
