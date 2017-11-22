@@ -139,11 +139,11 @@ handleOption(const std::string_view& option) noexcept
 
     if (const auto it{ m_currentOption->find_first_of(equal)}; it != std::string_view::npos)
     {
+        auto value = m_currentOption.value();
+        value.remove_prefix(it + 1);
         // Update the current option
         m_currentOption->remove_suffix(m_currentOption->size() - it);
         // Handle its value
-        auto value = m_currentOption.value();
-        value.remove_prefix(it + 1);
         handleValue(value);
     }
 }
